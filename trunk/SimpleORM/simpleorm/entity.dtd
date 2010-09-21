@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!ELEMENT entities (entity)+>
+
+<!ELEMENT entity (field)+>
+<!ATTLIST entity name ID #REQUIRED>
+
+<!ELEMENT field EMPTY>
+<!ATTLIST field name NMTOKEN #REQUIRED >
+<!ATTLIST field entity IDREF #IMPLIED>
+<!ATTLIST field key (yes|no) #IMPLIED>
+<!ATTLIST field unique (yes|no) #IMPLIED>
+<!ATTLIST field null (yes|no) #IMPLIED>
+<!ATTLIST field type NMTOKEN #IMPLIED>
+<!ATTLIST field relationship (o-o|o-m|m-o|m-m) #IMPLIED>
