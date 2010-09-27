@@ -7,8 +7,9 @@ require_once 'SimpleORM_Entity.php';
 require_once 'SimpleORM_Logger.php';
 require_once 'SimpleORM_Restriction.php';
 require_once 'SimpleORM_Settings.php';
+require_once 'SimpleORM_Field.php';
 
-class Entity_Util {
+class SimpleORM_Util {
 
     /**
      * Hash table to hold all the entities defines in the entities xml file
@@ -16,11 +17,14 @@ class Entity_Util {
      */
     private static $entities = array();
 
-    public static function start($config) {
+    private static $loaded = false;
+
+    public static function load() {
         
         self::loadSettings();
         self::connect();
         self::loadEntities();
+        self::$loaded = true;
     }
 
     private static function connect() {
@@ -29,18 +33,19 @@ class Entity_Util {
 
     private static function loadEntities() {
         $str = file_get_contents(Settings::get('entities'));
+        echo $str;
         $entities = new SimpleXMLElement($str);
         foreach ($entities->entity as $entity) {
-            $ent = new Entity();
+            $ent = new SimpleORM_Entity();
 
             $ent->name = "{$entity['name']}";
 
             foreach ($entity->field as $field) {
-                $f = new Field();
+                $f = new SimpleORM_Field();
                 $f->name = "{$field['name']}";
                 $f->isKey = "{$field['key']}" == 'yes' ? true : false;
                 $f->isNull = "{$field['null']}" == 'yes' ? true : false;
-                $f->relationship = strlen("{$field['relationship']}") == 0 ? Field::one_to_one : "{$field['relationship']}";
+                $f->relationship = strlen("{$field['relationship']}") == 0 ? SimpleORM_Field::one_to_one : "{$field['relationship']}";
                 $f->isUnique = "{$field['unique']}" == 'yes' ? true : false;
                 $f->entity = strlen("{$field['entity']}") == 0 ? null : self::getEntity("{$field['entity']}");
                 if (strlen($f->name) == 0) {
@@ -56,14 +61,14 @@ class Entity_Util {
                 //echo "name: $f->name unique:$f->isUnique relationship:$f->relationship entity:$f->entity<br>";
             }
             
-            self::$entities[$ent->name] = $ent;
+            self::$entities[$ent->name] =& $ent;
         }
         
         if (Settings::get('auto_create_table') == 'yes')
             foreach (self::$entities as $entity) {
                 foreach ($entity->createStmts() as $stmt) {
                     try {
-                        Connection::execute($stmt);
+                        SimpleORM_Connection::execute($stmt);
                     } catch (Exception $e) {
                         //Logger::logException($e);
                         echo $e->getMessage();
@@ -81,14 +86,16 @@ class Entity_Util {
     }
 
     private static function loadSettings() {
-        
+        global $simpleORMSetting;
         foreach ($simpleORMSetting as $key=>$value) {
             Settings::set($key, $value);
         }
     }
 
     static function getDao($entity) {
-        return new DAO(self::getEntity($entity));
+        if (!self::$loaded)
+            self::load();
+        return new SimpleORM_DAO(self::getEntity($entity));
     }
 
 }

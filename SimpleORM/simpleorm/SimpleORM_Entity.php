@@ -7,17 +7,13 @@ class SimpleORM_Entity {
     private $withentity = array();
     private $auto;
     private $updatables;
-    private $onetooneentities = array();
     private $singular = array();
     private $withoutentity = array();
     public $name;
     private $basicFields = array();
-    private $singularEntities = array();
-    private static $delete = 'cascade';
-    private static $disallow = 'restrict';
 
     
-    public function setID(Field $id) {
+    public function setID(SimpleORM_Field $id) {
         $this->id = $id;
     }
 
@@ -43,7 +39,7 @@ class SimpleORM_Entity {
 
     private function toColDefinition($field, $name) {
         $main = isset($name) ? "$name " : "$field->name ";
-        $main .= $field->type == Field::auto_int ? "int auto_increment " : "$field->type ";
+        $main .= $field->type == SimpleORM_Field::auto_int ? "int auto_increment " : "$field->type ";
         $main .= $field->isNull ? ' null ' : ' not null ';
         $main .= $field->isUnique ? 'unique' : '';
         $main .= $field->isKey ? 'primary key' : '';
@@ -68,15 +64,15 @@ class SimpleORM_Entity {
         foreach ($this->fields as $field) {
 
             //echo "<br> ahahahhaha $field->name $field->relationship<br><br>\n";
-            if ($field->relationship == Field::one_to_one && $field->entity == null) {
+            if ($field->relationship == SimpleORM_Field::one_to_one && $field->entity == null) {
 
                 $columns[] = $this->toColDefinition($field);
                 //print_r($columns);
-            } elseif ($field->relationship == Field::one_to_many && $field->entity == null) {
+            } elseif ($field->relationship == SimpleORM_Field::one_to_many && $field->entity == null) {
                 $linkcols = array();
                 $linkconstraints = array();
                 $fieldtemp = $this->getID();
-                if ($fieldtemp->type == Field::auto_int) {
+                if ($fieldtemp->type == SimpleORM_Field::auto_int) {
                     $fieldtemp->type = 'int';
                     $fieldtemp->isNull = FALSE;
                 }
@@ -87,29 +83,29 @@ class SimpleORM_Entity {
                 $linkconstraints[] = $this->toReference($this->name, $this->name, $this->getID()->name);
 
                 $stmts[] = $this->joinSQL("{$this->name}_{$field->name}", $linkcols, $linkconstraints);
-            } elseif (($field->relationship == Field::one_to_one || $field->relationship == Field::many_to_one) && $field->entity != null) {
+            } elseif (($field->relationship == SimpleORM_Field::one_to_one || $field->relationship == SimpleORM_Field::many_to_one) && $field->entity != null) {
 
                 $fieldtemp = $field->entity->getID();
-                if ($fieldtemp->type == Field::auto_int) {
+                if ($fieldtemp->type == SimpleORM_Field::auto_int) {
                     $fieldtemp->type = 'int';
                     $fieldtemp->isNull = $field->isNull;
                 }
                 $fieldtemp->isKey = FALSE;
                 $columns[] = $this->toColDefinition($fieldtemp, $field->name);
                 $constraints[] = $this->toReference($field->name, $field->entity->name, $field->entity->getID()->name);
-            } elseif (($field->relationship == Field::one_to_many || $field->relationship == Field::many_to_many) && $field->entity != null) {
+            } elseif (($field->relationship == SimpleORM_Field::one_to_many || $field->relationship == SimpleORM_Field::many_to_many) && $field->entity != null) {
 
                 $linkcols = array();
                 $linkconstraints = array();
                 $fieldtemp = $this->getID();
-                if ($fieldtemp->type == Field::auto_int) {
+                if ($fieldtemp->type == SimpleORM_Field::auto_int) {
                     $fieldtemp->type = 'int';
                     $fieldtemp->isNull = FALSE;
                 }
                 $fieldtemp->isKey = FALSE;
 
                 $enttemp = $field->entity->getID();
-                if ($enttemp->type == Field::auto_int) {
+                if ($enttemp->type == SimpleORM_Field::auto_int) {
                     $enttemp->type = 'int';
                     $enttemp->isNull = FALSE;
                 }
@@ -142,19 +138,19 @@ class SimpleORM_Entity {
         return $this->getName();
     }
 
-    public function addField(Field $f) {
-        $this->fields[] = & $f;
+    public function addField(SimpleORM_Field $f) {
+        $this->fields[] =& $f;
         if ($f->isKey)
-            $this->ids[] = & $f;
-        if ($f->type == Field::auto_int)
-            $this->auto = & $f;
+            $this->ids[] =& $f;
+        if ($f->type == SimpleORM_Field::auto_int)
+            $this->auto =& $f;
         if ($f->isUpdatable)
-            $this->updatables[] = & $f;
+            $this->updatables[] =& $f;
         if ($f->entity != null)
-            $this->withentity[] &= $f;
+            $this->withentity[] =& $f;
         else
             $this->withoutentity[] = $f;
-        if ($f->relationship == Field::one_to_one || $f->relationship == Field::many_to_one) {
+        if ($f->relationship == SimpleORM_Field::one_to_one || $f->relationship == SimpleORM_Field::many_to_one) {
             $this->singular[] = & $f->name;
 
         }
@@ -179,42 +175,4 @@ class SimpleORM_Entity {
     }
 
 }
-
-class Field {
-
-    public $isKey = false;
-    public $isNull = true;
-    public $isUnique = false;
-    public $entity = null;
-    public $name;
-    public $index = false;
-    public $isUpdatable = true;
-    public $type = 'varchar(255)';
-    public $relationship = Field::one_to_one;
-
-    //private $parent;
-
-    public function fillDefaults() {
-        //if (!isset ())
-    }
-
-    public function setParent(Entity $parent) {
-        $this->parent = $parent;
-    }
-
-    const auto_int = 'auto_int';
-    const one_to_one = 'o-o';
-    const one_to_many = 'o-m';
-    const many_to_many = 'm-m';
-    const many_to_one = 'm-o';
-
-    /**
-     * checks for illegall combination of properties
-     */
-    public function validate() {
-        
-    }
-
-}
-
 ?>
