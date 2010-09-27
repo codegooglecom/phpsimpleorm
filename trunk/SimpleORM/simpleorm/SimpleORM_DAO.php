@@ -4,7 +4,7 @@ class SimpleORM_DAO {
 
     protected $entity;
 
-    public function __construct(Entity $entity) {
+    public function __construct(SimpleORM_Entity $entity) {
         $this->entity = $entity;
     }
 
@@ -18,13 +18,13 @@ class SimpleORM_DAO {
             $fieldname = $field->name;
             $value = & $object->$fieldname;
 
-            if ($field->type == Field::auto_int)
+            if ($field->type == SimpleORM_Field::auto_int)
                 continue;
 
-            if ($field->relationship == Field::one_to_one && $field->entity == null) {
+            if ($field->relationship == SimpleORM_Field::one_to_one && $field->entity == null) {
                 $direct[] = array($fieldname, $value);
-            } elseif (($field->relationship == Field::one_to_one || $field->relationship == Field::many_to_one) && $field->entity != null) {
-                $dao = & Entity_Util::getDao($field->entity->name);
+            } elseif (($field->relationship == SimpleORM_Field::one_to_one || $field->relationship == SimpleORM_Field::many_to_one) && $field->entity != null) {
+                $dao = SimpleORM_Util::getDao($field->entity->name);
                 $value = $dao->persist($value);
 //                if($this->entity->name == 'project')
 //                    print_r($value);
@@ -35,11 +35,11 @@ class SimpleORM_DAO {
                 $idname = $id->name;
                 $idvalue = $value->$idname;
                 $direct[] = array($fieldname, $idvalue);
-            } elseif ($field->entity == null && $field->relationship == Field::one_to_many) {
+            } elseif ($field->entity == null && $field->relationship == SimpleORM_Field::one_to_many) {
                 foreach ($value as $val)
                     $insertqueue[] = array($fieldname, $val);
-            } elseif ($field->entity != null && ($field->relationship == Field::one_to_many || $field->relationship == Field::many_to_many)) {
-                $dao = & Entity_Util::getDao($field->entity->name);
+            } elseif ($field->entity != null && ($field->relationship == SimpleORM_Field::one_to_many || $field->relationship == SimpleORM_Field::many_to_many)) {
+                $dao = SimpleORM_Util::getDao($field->entity->name);
                 $array = array();
                 foreach ($value as $val) {
                     $array[] = $dao->persist($val);
@@ -59,7 +59,7 @@ class SimpleORM_DAO {
             $params[] = $dir[1];
         }
         $stmt = substr($stmt, 0, strlen($stmt) - 2);
-        $ret = Connection::execute($stmt, $params);
+        $ret = SimpleORM_Connection::execute($stmt, $params);
         if (($auto = $this->entity->getAutoField()) != NULL) {
             $name = $auto->name;
             $object->$name = $ret;
@@ -72,7 +72,7 @@ class SimpleORM_DAO {
             $stmt .= " {$top[0]} = %s , {$this->entity->name} = %s";
             $params[] = $top[1];
             $params[] = $this->getIDValue($object);
-            Connection::execute($stmt, $params);
+            SimpleORM_Connection::execute($stmt, $params);
         }
         return $this->get($this->getIDValue($object));
     }
@@ -87,15 +87,15 @@ class SimpleORM_DAO {
             $fieldname = $field->name;
             $value = & $object->$fieldname;
 
-            if ($field->type == Field::auto_int)
+            if ($field->type == SimpleORM_Field::auto_int)
                 continue;
 
-            if ($field->relationship == Field::one_to_one && $field->entity == null) {
+            if ($field->relationship == SimpleORM_Field::one_to_one && $field->entity == null) {
                 $direct[] = array($fieldname, $value);
-            } elseif ($field->relationship == Field::one_to_one && $field->entity != null) {
+            } elseif ($field->relationship == SimpleORM_Field::one_to_one && $field->entity != null) {
                 $originalobj = $this->get($this->get($object))->$fieldname;
 
-                $dao = & Entity_Util::getDao($field->entity->name);
+                $dao = SimpleORM_Util::getDao($field->entity->name);
                 $dao->delete($originalobj);
                 $value = $dao->persist($value);
                 $object->$fieldname = $value;
@@ -107,20 +107,20 @@ class SimpleORM_DAO {
                 $direct[] = array($fieldname, $idvalue);
             }
 
-            elseif ($field->relationship == Field::many_to_one && $field->entity != null) {
-                $dao = & Entity_Util::getDao($field->entity->name);
+            elseif ($field->relationship == SimpleORM_Field::many_to_one && $field->entity != null) {
+                $dao = SimpleORM_Util::getDao($field->entity->name);
                 $value = $dao->persist($value);
                 $object->$fieldname = $value;
                 $id = $field->entity->getID();
                 $idname = $id->name;
                 $idvalue = $value->$idname;
                 $direct[] = array($fieldname, $idvalue);
-            } elseif ($field->entity == null && $field->relationship == Field::one_to_many) {
+            } elseif ($field->entity == null && $field->relationship == SimpleORM_Field::one_to_many) {
                 foreach ($value as $val)
                     $insertqueue[] = array($fieldname, $val);
                 $deletequeue[] = "{$this->entity->name}_$field->name";
-            } elseif ($field->entity != null && $field->relationship == Field::one_to_many) {
-                $dao = & Entity_Util::getDao($field->entity->name);
+            } elseif ($field->entity != null && $field->relationship == SimpleORM_Field::one_to_many) {
+                $dao = SimpleORM__Util::getDao($field->entity->name);
                 $array = array();
                 foreach ($value as $val) {
                     $array[] = $dao->persist($val);
@@ -130,8 +130,8 @@ class SimpleORM_DAO {
                     $insertqueue[] = array($fieldname, $idvalue);
                 }
                 $object->$fieldname = $array;
-            } elseif ($field->entity != null && ($field->relationship == Field::one_to_many || $field->relationship == Field::many_to_many)) {
-                $dao = & Entity_Util::getDao($field->entity->name);
+            } elseif ($field->entity != null && ($field->relationship == SimpleORM_Field::one_to_many || $field->relationship == SimpleORM_Field::many_to_many)) {
+                $dao = SimpleORM_Util::getDao($field->entity->name);
                 $array = array();
                 foreach ($value as $val) {
                     $array[] = $dao->persist($val);
@@ -157,11 +157,11 @@ class SimpleORM_DAO {
         $params[] = $this->getIDValue($object);
 
 
-        Connection::execute($stmt, $params);
+        SimpleORM_Connection::execute($stmt, $params);
 
         foreach ($deletequeue as $table) {
             $stmt = "delete from $table where {$this->entity->name} =%s";
-            Connection::execute($stmt, array($this->getIDValue($object)));
+            SimpleORM_Connection::execute($stmt, array($this->getIDValue($object)));
         }
 
         foreach ($insertqueue as $top) {
@@ -171,7 +171,7 @@ class SimpleORM_DAO {
             $params[] = $top[1];
             $params[] = $this->getIDValue($object);
         }
-        Connection::execute($stmt, $params);
+        SimpleORM_Connection::execute($stmt, $params);
 
         return $this->get($this->getIDValue($object));
     }
@@ -183,7 +183,7 @@ class SimpleORM_DAO {
     }
 
     public function get($id) {
-        $query = & $this->query(C::eq($this->entity->getID()->name, $id));
+        $query = & $this->query(SimpleORM_Criteria::eq($this->entity->getID()->name, $id));
         return $query[0];
     }
 
@@ -197,13 +197,13 @@ class SimpleORM_DAO {
 
                 $fieldname = $field->name;
 
-                if ($field->relationship == Field::one_to_one && $field->entity == null) {
+                if ($field->relationship == SimpleORM_Field::one_to_one && $field->entity == null) {
                     $object->$fieldname = stripcslashes($row[$fieldname]);
-                } elseif (($field->relationship == Field::many_to_one || $field->relationship == Field::one_to_one ) && $field->entity != null) {
+                } elseif (($field->relationship == SimpleORM_Field::many_to_one || $field->relationship == SimpleORM_Field::one_to_one ) && $field->entity != null) {
                     $fieldentity = $field->entity;
                     $fieldentityname = $fieldentity->name;
 
-                    $fielddao = Entity_Util::getDao($fieldentityname);
+                    $fielddao = SimpleORM_Util::getDao($fieldentityname);
 
                     //print_r( $row );
                     $object->$fieldname = $fielddao->get($row[$fieldname]);
@@ -219,19 +219,18 @@ class SimpleORM_DAO {
                 } elseif (($field->relationship == Field::one_to_many || $field->relationship == Field::many_to_many ) && $field->entity != null) {
                     $fieldentity = $field->entity;
                     $fieldentityname = $fieldentity->name;
-                    $fielddao = Entity_Util::getDao($fieldentityname);
+                    $fielddao = SimpleORM_Util::getDao($fieldentityname);
 
                     $params = array();
                     $query = "select {$field->name} from {$this->entity->name}_{$field->name} where {$this->entity->name} = %s";
                     $params[] = $id;
                     $values = array();
-                    foreach (Connection::query($query, $params) as $resultrow)
+                    foreach (SimpleORM_Connection::query($query, $params) as $resultrow)
                         $values[] = $fielddao->get($resultrow[0]);
 
                     $object->$fieldname = $values;
                 }
             }
-
             $objects[] = $object;
         }
 
@@ -252,37 +251,37 @@ class SimpleORM_DAO {
             $entname = $field->name;
 
 
-            if ($field->relationship == Field::one_to_one && $field->entity != null) {
+            if ($field->relationship == SimpleORM_Field::one_to_one && $field->entity != null) {
                 $entobj = $object->$entname;
-                $dao = Entity_Util::getDao($entity->name);
+                $dao = SimpleORM_Util::getDao($entity->name);
                 $dao->delete($entobj);
-            } elseif ($field->relationship == Field::one_to_many) {
+            } elseif ($field->relationship == SimpleORM_Field::one_to_many) {
 
                 $query = "delete from {$this->entity->name}_{$field->name} where {$this->entity->name} = %s";
                 $params = array();
                 $params[] = $this->getIDValue($object);
-                Connection::execute($query, $params);
+                SimpleORM_Connection::execute($query, $params);
 
                 if ($field->entity != null) {
-                    $object2 = Entity_Util::getDao($this->entity->name)->get($this->getIDValue($object));
+                    $object2 = SimpleORM_Util::getDao($this->entity->name)->get($this->getIDValue($object));
                     foreach ($object2->$entname as $entobj)
                         $dao->delete($entobj);
                 }
             }
         }
         $stmt = "delete from {$this->entity->name} where {$this->entity->getID()->name} = %s";
-        Connection::execute($stmt, array($this->getIDValue($object)));
+        SimpleORM_Connection::execute($stmt, array($this->getIDValue($object)));
     }
 
     public function query($criterium=null, $restriction=null) {
-        
+
         $stmt = sprintf('select  %s from %s %s %s',
                         implode(', ', $this->entity->getSingulars()),
                         $this->entity->name,
                         strlen(trim("$criterium")) == 0 ? '' : " where $criterium",
                         $restriction == null ? '' : " $restriction"
         );
-        return $this->toObject(Connection::query($stmt));
+        return $this->toObject(SimpleORM_Connection::query($stmt));
     }
 
     public function count($criterium) {

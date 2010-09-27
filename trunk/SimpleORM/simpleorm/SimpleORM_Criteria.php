@@ -69,7 +69,7 @@ abstract class SimpleORM_Criteria {
 
 }
 
-class Btw extends C {
+class Btw extends SimpleORM_Criteria {
 
     public function __construct($field, $value, $entity) {
         $this->field = $field;
@@ -88,7 +88,7 @@ class Btw extends C {
 
 }
 
-class Like extends C {
+class Like extends SimpleORM_Criteria {
 
     public function __construct($field, $value, $entity) {
         $this->field = $field;
@@ -102,7 +102,7 @@ class Like extends C {
 
 }
 
-class Gt extends C {
+class Gt extends SimpleORM_Criteria {
 
     public function __construct($field, $value, $entity) {
         $this->field = $field;
@@ -116,7 +116,7 @@ class Gt extends C {
 
 }
 
-class Lt extends C {
+class Lt extends SimpleORM_Criteria {
 
     public function __construct($field, $value, $entity) {
         $this->field = $field;
@@ -130,7 +130,7 @@ class Lt extends C {
 
 }
 
-class Ge extends C {
+class Ge extends SimpleORM_Criteria {
 
     public function __construct($field, $value, $entity) {
         $this->field = $field;
@@ -144,7 +144,7 @@ class Ge extends C {
 
 }
 
-class Le extends C {
+class Le extends SimpleORM_Criteria {
 
     public function __construct($field, $value, $entity) {
         $this->field = $field;
@@ -158,7 +158,7 @@ class Le extends C {
 
 }
 
-class Eq extends C {
+class Eq extends SimpleORM_Criteria {
 
     public function __construct($field, $value, $entity) {
         $this->field = $field;
@@ -167,12 +167,12 @@ class Eq extends C {
     }
 
     public function __toString() {
-        return sprintf("%s = '%s'", $this->field, Connection::escape($this->values[0]));
+        return sprintf("%s = '%s'", $this->field, SimpleORM_Connection::escape($this->values[0]));
     }
 
 }
 
-class All extends C {
+class All extends SimpleORM_Criteria {
 
     public function __construct($args) {
         $this->children = $args;
@@ -190,7 +190,7 @@ class All extends C {
 
 }
 
-class Any extends C {
+class Any extends SimpleORM_Criteria {
 
     public function __construct($args) {
         $this->children = $args;

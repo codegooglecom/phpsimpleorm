@@ -8,12 +8,12 @@ $simpleORMSetting['mysql_username'] = 'root';
 
 $simpleORMSetting['mysql_password'] = '';
 
-$simpleORMSetting['mysql_database'] = 'k';
+$simpleORMSetting['mysql_database'] = 'simpleorm';
 
-//this should be absolute or relative to the Entity_Util.php file
-$simpleORMSetting['entities'] = '../entities.xml';
+//this should be absolute or relative to the SimpleORM_Util.php file
+$simpleORMSetting['entities'] = 'entities.xml';
 
-$simpleORMSetting['auto_create_table'] = 'no';
+$simpleORMSetting['auto_create_table'] = 'yes';
 
 $simpleORMSetting['auto_create_classes'] = 'no';
 
