@@ -1,0 +1,1 @@
+SimpleORM for PHP is designed to work like Hibernate for Java but required far fewer steps to setup
